@@ -7,9 +7,12 @@ SELECT
     m.venue_clean,
     c.city_clean,
     s.season_year,
+    m.team1,
+    m.team2,
     m.result,
     m.match_winner,
     m.player_of_match,
+    m.toss_winner,
     m.toss_decision
 
 FROM v_matches_venue AS m

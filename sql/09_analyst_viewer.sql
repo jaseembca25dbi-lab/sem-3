@@ -42,13 +42,23 @@ WHERE  innings IN (1,2)                    -- ignore super-over innings 3
 GROUP  BY match_id, innings;               -- one row per team per match
 
 
--- Match-level totals: one row per match showing the overall score and ball count.
+-- Match-level totals: one row per match showing the overall score, chase outcome,
+-- and the key first/second innings numbers that the analysis notebook expects.
 DROP VIEW IF EXISTS v_match_totals;
 CREATE VIEW v_match_totals AS
 SELECT
     match_id,
+    MAX(CASE WHEN innings = 1 THEN runs END) AS first_innings_runs,
+    MAX(CASE WHEN innings = 2 THEN runs END) AS second_innings_runs,
+    MAX(CASE WHEN innings = 1 THEN batting_team END) AS first_innings_team,
+    MAX(CASE WHEN innings = 2 THEN batting_team END) AS second_innings_team,
     SUM(runs) AS total_runs,
     SUM(wickets) AS total_wickets,
-    SUM(legal_balls) AS total_legal_balls
+    SUM(legal_balls) AS total_legal_balls,
+    CASE
+        WHEN MAX(CASE WHEN innings = 2 THEN runs END) > MAX(CASE WHEN innings = 1 THEN runs END)
+            THEN 1
+        ELSE 0
+    END AS chase_won
 FROM v_innings
 GROUP BY match_id;
